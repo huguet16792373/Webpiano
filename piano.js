@@ -13,6 +13,8 @@ function getAudioCtx(){
 
 const wkeys=[];
 const bkeys=[];
+let isMouseDown=false;
+let currentKey=null;
 const wkeyWidth=50;
 const wkeyHeight=100;
 const bkeyWidth=25;
@@ -107,6 +109,15 @@ stopSound(){
 }
 
 }
+function findKeyAt(point){
+  for(const key of bkeys){
+    if(key.testHit(point))return key;
+  }
+  for(const key of wkeys){
+    if(key.testHit(point))return key;
+  }
+  return null;
+}
 function playnote(freq,duration=0.5){
   const osc=audioCtx.createOscillator();
   const gain =audioCtx.createGain();
@@ -118,7 +129,7 @@ function playnote(freq,duration=0.5){
   gain.connect(audioCtx.destination);
 
   osc.start();
-  gain.gain.setValueAtTime(1,audioCtx.currentTIme);
+  gain.gain.setValueAtTime(1,audioCtx.currentTime);
    gain.gain.exponentialRampToValueAtTime(
     0.001,
     audioCtx.currentTime + duration
@@ -156,6 +167,7 @@ function redraw(){
 }
 init();
 canvas.addEventListener("mousedown",(e)=>{
+  isMouseDown=true;
   const rect=canvas.getBoundingClientRect();
 
   const point={
@@ -163,34 +175,22 @@ canvas.addEventListener("mousedown",(e)=>{
     y:e.clientY-rect.top
   };
   [...wkeys, ...bkeys].forEach(k => k.status = "inactive");
-  for(let key of bkeys){
-    if(key.testHit(point)){
-      key.status="active";
-      console.log("黒鍵押下中");
-      key.startSound();
-      redraw();
-      return;
-    }
-  }
-  for(let key of wkeys){
-    if(key.testHit(point)){
-      key.status="active";
-      console.log("白鍵押下中");
-      key.startSound();
-      redraw();
-      return;
-    }
-  }
-
-})
-window.addEventListener("mouseup",(e)=>{
-  [...wkeys,...bkeys].forEach(k=>{
-    if(k.status==="active"){
-      k.status="inactive";
-      k.stopSound();}
-  })
+  const key=findKeyAt(point);
+  if(!key)return;
+  currentKey=key;
+  key.status="active";
+  key.startSound();
   redraw();
-})
+});
+window.addEventListener("mouseup",(e)=>{
+  isMouseDown=false;
+  if(currentKey){
+    currentKey.stopSound();
+    currentKey.status="inactive";
+    currentKey=null;
+    }
+    redraw();
+  });
 
 canvas.addEventListener("mousemove",(e)=>{
   const rect=canvas.getBoundingClientRect();
@@ -199,29 +199,38 @@ canvas.addEventListener("mousemove",(e)=>{
     x:e.clientX-rect.left,
     y:e.clientY-rect.top
   };
-   [...wkeys, ...bkeys].forEach(k => {
-    if(k.status === "hovered") k.status = "inactive";
-  });
-  for(let key of bkeys){
-    if(key.testHit(point)&&key.status!=="active"){
-      key.status="hovered";
-      redraw();
-      return;
-    }
-  }
-  for(let key of wkeys){
-    if(key.testHit(point)&&key.status!=="active"){
-      key.status="hovered";
-      redraw();
-      return;
-    }
-  }
-  
-})
-canvas.addEventListener("mouseleave", ()=>{
+  const key =findKeyAt(point);
+if(!isMouseDown){
   [...wkeys, ...bkeys].forEach(k => {
     if(k.status === "hovered") k.status = "inactive";
   });
+  if(key&&key.status!=="active"){
+      key.status="hovered";
+    }
+    redraw();
+    return;
+  }
+
+  if(key !==currentKey){
+    if(currentKey){
+      currentKey.stopSound();
+      currentKey.status="inactive";
+    }  
+    if(key){
+      key.startSound();
+      key.status="active";
+    }
+  currentKey=key;
+  redraw();
+  }
+})
+canvas.addEventListener("mouseleave", ()=>{
+  if(isMouseDown&&currentKey){
+    currentKey.stopSound();
+    currentKey.status="inactive";
+    currentKey=null;
+  }
+  isMouseDown=false;
   redraw();
 });
 
