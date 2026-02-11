@@ -1,8 +1,8 @@
 const canvas = document.getElementById("canvasArea");
 const timbreSelecter= document.getElementById("timbre");
 const toneDisplay=document.getElementById("toneDisplay");
-let ctx=null;
 
+let ctx=null;
 let audioCtx=null;
 let masterGain=null;
 let timbre=null;
@@ -188,9 +188,14 @@ function redraw(){
   for(let key of wkeys)key.draw();
   for(let key of bkeys)key.draw();
 }
+
 init();
-canvas.addEventListener("mousedown",(e)=>{
+
+canvas.addEventListener("touchstart", e => e.preventDefault(), { passive:false });
+canvas.addEventListener("touchmove", e => e.preventDefault(), { passive:false });
+canvas.addEventListener("pointerdown",(e)=>{
   isMouseDown=true;
+  e.preventDefault(); 
   const rect=canvas.getBoundingClientRect();
 
   const point={
@@ -206,7 +211,7 @@ canvas.addEventListener("mousedown",(e)=>{
   key.startSound();
   redraw();
 });
-window.addEventListener("mouseup",(e)=>{
+window.addEventListener("pointerup",(e)=>{
   isMouseDown=false;
   if(currentKey){
     currentKey.stopSound();
@@ -216,9 +221,9 @@ window.addEventListener("mouseup",(e)=>{
     redraw();
   });
 
-canvas.addEventListener("mousemove",(e)=>{
+canvas.addEventListener("pointermove",(e)=>{
   const rect=canvas.getBoundingClientRect();
-
+  e.preventDefault(); 
   const point={
     x:e.clientX-rect.left,
     y:e.clientY-rect.top
