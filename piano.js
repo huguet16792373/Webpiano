@@ -191,8 +191,6 @@ function redraw(){
 
 init();
 
-canvas.addEventListener("touchstart", e => e.preventDefault(), { passive:false });
-canvas.addEventListener("touchmove", e => e.preventDefault(), { passive:false });
 canvas.addEventListener("pointerdown",(e)=>{
   isMouseDown=true;
   e.preventDefault(); 

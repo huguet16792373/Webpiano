@@ -3,3 +3,7 @@ canvas{
   -webkit-user-select:none;
   user-select: none;
 }
+div{
+  -webkit-user-select: none;
+  user-select: none;
+}
