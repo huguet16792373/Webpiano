@@ -160,19 +160,19 @@ function playnote(freq,duration=0.5){
 }
 function init(){
 if (canvas.getContext){
-  canvas.width=800;
+  canvas.width=1600;
     canvas.height=200;
     ctx = canvas.getContext("2d");
 }
 getAudioCtx();
 timbre=timbreSelecter.value;
 const whiteSemitone=[-9,-7,-5,-4,-2,0,2];
-for(let i=0;i<13;i++){
+for(let i=0;i<21;i++){
   const octave =Math.floor(i/7);
   const s=whiteSemitone[i%7]+octave*12;
   wkeys.push(new keyObject(50+50*i,50,0,s));
 }
-for(let i=0;i<2;i++){
+for(let i=0;i<3;i++){
   const blackSemitone=[-8,-6,-3,-1,1];
   bkeys.push(new keyObject(175/2+50*7*i,50,1,blackSemitone[0]+i*12));
   bkeys.push(new keyObject(175/2+50+50*7*i,50,1,blackSemitone[1]+i*12));
