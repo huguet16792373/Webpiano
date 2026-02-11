@@ -189,7 +189,7 @@ function redraw(){
   for(let key of bkeys)key.draw();
 }
 init();
-canvas.addEventListener("mousedown",(e)=>{
+canvas.addEventListener("pointerdown",(e)=>{
   isMouseDown=true;
   const rect=canvas.getBoundingClientRect();
 
@@ -206,7 +206,7 @@ canvas.addEventListener("mousedown",(e)=>{
   key.startSound();
   redraw();
 });
-window.addEventListener("mouseup",(e)=>{
+window.addEventListener("pointerup",(e)=>{
   isMouseDown=false;
   if(currentKey){
     currentKey.stopSound();
@@ -216,7 +216,7 @@ window.addEventListener("mouseup",(e)=>{
     redraw();
   });
 
-canvas.addEventListener("mousemove",(e)=>{
+canvas.addEventListener("pointermove",(e)=>{
   const rect=canvas.getBoundingClientRect();
 
   const point={
