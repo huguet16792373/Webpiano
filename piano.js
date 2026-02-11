@@ -1,15 +1,22 @@
 const canvas = document.getElementById("canvasArea");
+const timbreSelecter= document.getElementById("timbre");
+const toneDisplay=document.getElementById("toneDisplay");
 let ctx=null;
 
-const AudioCtx=window.AudioContext||window.webkitAudioContext;
 let audioCtx=null;
+let masterGain=null;
+let timbre=null;
 function getAudioCtx(){
   if(!audioCtx){
-    audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    audioCtx = new AudioCtx();
+
+    masterGain=audioCtx.createGain();
+    masterGain.gain.value=1;
+    masterGain.connect(audioCtx.destination);
   }
   return audioCtx;
 }
-
 
 const wkeys=[];
 const bkeys=[];
@@ -21,6 +28,10 @@ const bkeyWidth=25;
 const bkeyHeight=60;
 
 const A4=440;
+const noteNames=[
+  "A","A#","B","C","C#","D",
+  "D#","E","F","F#","G","G#"
+]
 
 class keyObject{
   constructor(x,y,c,semitone){
@@ -80,17 +91,22 @@ class keyObject{
   }
   if(this.osc) return;
 
+  const now=ctx.currentTime;
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
 
-  osc.type = "sine";
+  osc.type = timbre;
   osc.frequency.value = this.freq;
 
   osc.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(masterGain);
 
-  gain.gain.setValueAtTime(0.001, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(1, audioCtx.currentTime + 0.02);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(1, now + 0.1);
+  gain.gain.linearRampToValueAtTime(0.7, now + 0.3);
+  gain.gain.linearRampToValueAtTime(0, now + 1.0);
+
 
   osc.start();
   this.osc = osc;
@@ -108,6 +124,12 @@ stopSound(){
   this.osc = null;
 }
 
+semitoneToNote(){
+  const index=((this.semitone%12)+12)%12;
+  const oct=4+Math.floor((this.semitone+9)/12);
+  return noteNames[index]+oct;
+}
+
 }
 function findKeyAt(point){
   for(const key of bkeys){
@@ -122,11 +144,11 @@ function playnote(freq,duration=0.5){
   const osc=audioCtx.createOscillator();
   const gain =audioCtx.createGain();
 
-  osc.type="sine";
+  osc.type=timbre;
   osc.frequency.value=freq;
 
   osc.connect(gain);
-  gain.connect(audioCtx.destination);
+  gain.connect(masterGain);
 
   osc.start();
   gain.gain.setValueAtTime(1,audioCtx.currentTime);
@@ -143,6 +165,7 @@ if (canvas.getContext){
     ctx = canvas.getContext("2d");
 }
 getAudioCtx();
+timbre=timbreSelecter.value;
 const whiteSemitone=[-9,-7,-5,-4,-2,0,2];
 for(let i=0;i<13;i++){
   const octave =Math.floor(i/7);
@@ -177,6 +200,7 @@ canvas.addEventListener("mousedown",(e)=>{
   [...wkeys, ...bkeys].forEach(k => k.status = "inactive");
   const key=findKeyAt(point);
   if(!key)return;
+  toneDisplay.textContent=key.semitoneToNote();
   currentKey=key;
   key.status="active";
   key.startSound();
@@ -217,6 +241,7 @@ if(!isMouseDown){
       currentKey.status="inactive";
     }  
     if(key){
+      toneDisplay.textContent=key.semitoneToNote();
       key.startSound();
       key.status="active";
     }
@@ -233,4 +258,7 @@ canvas.addEventListener("mouseleave", ()=>{
   isMouseDown=false;
   redraw();
 });
+
+document.getElementById("mastervolume").addEventListener("input",e=>{masterGain.gain.value=e.target.value;});
+timbreSelecter.addEventListener("change",e=>{timbre=e.target.value;});
 
