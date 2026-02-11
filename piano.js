@@ -27,7 +27,7 @@ const wkeyHeight=100;
 const bkeyWidth=25;
 const bkeyHeight=60;
 
-const A4=440;
+const A3=220;
 const noteNames=[
   "A","A#","B","C","C#","D",
   "D#","E","F","F#","G","G#"
@@ -39,7 +39,7 @@ class keyObject{
     this.y=y;
     this.c=c;
     this.semitone=semitone;
-    this.freq=A4*Math.pow(2,semitone/12);
+    this.freq=A3*Math.pow(2,semitone/12);
     this.status="inactive";
   }
   get width(){return this.c===0?wkeyWidth:bkeyWidth};
@@ -126,7 +126,7 @@ stopSound(){
 
 semitoneToNote(){
   const index=((this.semitone%12)+12)%12;
-  const oct=4+Math.floor((this.semitone+9)/12);
+  const oct=3+Math.floor((this.semitone+9)/12);
   return noteNames[index]+oct;
 }
 
@@ -189,7 +189,7 @@ function redraw(){
   for(let key of bkeys)key.draw();
 }
 init();
-canvas.addEventListener("pointerdown",(e)=>{
+canvas.addEventListener("mousedown",(e)=>{
   isMouseDown=true;
   const rect=canvas.getBoundingClientRect();
 
@@ -206,7 +206,7 @@ canvas.addEventListener("pointerdown",(e)=>{
   key.startSound();
   redraw();
 });
-window.addEventListener("pointerup",(e)=>{
+window.addEventListener("mouseup",(e)=>{
   isMouseDown=false;
   if(currentKey){
     currentKey.stopSound();
@@ -216,7 +216,7 @@ window.addEventListener("pointerup",(e)=>{
     redraw();
   });
 
-canvas.addEventListener("pointermove",(e)=>{
+canvas.addEventListener("mousemove",(e)=>{
   const rect=canvas.getBoundingClientRect();
 
   const point={
